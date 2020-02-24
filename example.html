@@ -1,0 +1,18 @@
+<html>
+    <body>
+        <div id="app"></div>
+    </body>
+    <script src="./dist/bundle.js"></script>
+    <script>
+        const { reactive, ref, effect } = miniVue;
+        let data = reactive({
+            title: 'hello'
+        });
+        let some = ref('world');
+        effect(function() {
+            console.log(`${data.title} ${some.value}`);
+        });
+        data.title = 'Hello';
+        some.value = 'World';
+    </script>
+</html>

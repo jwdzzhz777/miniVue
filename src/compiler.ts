@@ -1,69 +1,52 @@
 import { toArray } from './helper';
-import template from 'lodash/template';
-
-enum NodeType {
-    Element = 1,
-    Attr,
-    Text,
-    CDATASection,
-    EntityReference,
-    Entity,
-    ProcessingInstruction,
-    Comment,
-    Document,
-    DocumentType,
-    DocumentFragment,
-    Notation
-};
+import { NodeType, VNode } from './vnode';
 
 const noSpaceAndLineBreak = /\s*|[\r\n]/g;
 const escape = /({{([\s\S]+?)}})+/g;
 
-export const compile = function(element: HTMLEmbedElement & Text) {
+export const compile = function(element: Element) {
     // 储存原始元素作为基准
     const primitiveList = element.childNodes;
-    let code = `with(this) {return ${process(element)}}`;
-    console.log(code);
+    let code = `console.log(this);with(this) {return ${process(element)}}`;
     return new Function(code);
 };
 
-type elmOption = {
+export type elmOption = {
     [props: string]: any
 }
 
-type createElm = (tagName: string, option: elmOption, children: HTMLEmbedElement[]) => void;
+export type createElement = (tagName: string, option: elmOption, children: Array<VNode | string>) => VNode;
 
-export const createElm: createElm = function(tagName, { attrs, event }, children = []) {
-    let el = document.createElement(tagName);
-
-    for (let key in attrs) {
-        el.setAttribute(key, attrs[key]);
-    }
-    
-    for (let key in event) {
-        el.addEventListener(key, event[key]);
-    }
-    if (children.length > 0) {
-        children.forEach(c => {
-            if (typeof c === 'string') el.appendChild(createText(c));
-            else el.appendChild(c);
-        });
-    }
-    return el;
+export const createElement: createElement = function(tagName, { attrs, event }, children = []) {
+    let vnodeList: VNode[] = children.map(item => {
+        if (typeof item === 'string') return createText(item);
+        else return item;
+    });
+    return new VNode({
+        tagName,
+        attrs,
+        event,
+        children: vnodeList,
+        type: NodeType.Element
+    });
 };
 
-export const createText = function(val: string) {
-    return document.createTextNode(val);
+type createText = (val: string) => VNode;
+export const createText: createText = function(val) {
+    return new VNode({
+        nodeValue: val,
+        type: NodeType.Text
+    });
 };
 
-const process = function(element: HTMLEmbedElement & Text) {
+const process = function(element: Element | Text) {
     let code = '';
     // 元素节点
-    if (element.nodeType === NodeType.Element) code = `_c("${element.localName}",`;
+    if (element instanceof Element) code = `_c("${element.localName}",`;
     // 文本节点
-    else if (element.nodeType === NodeType.Text) {
+    else if (element instanceof Text) {
         let text = element.wholeText.replace(noSpaceAndLineBreak, ''); // 去掉空格会车
-        let newText = text.replace(escape, function(match) {
+        let newText = text.replace(escape, function(match: string) {
             return `\${${match.slice(2, -2)}}`;
         });
         console.log(newText);
@@ -79,7 +62,7 @@ const process = function(element: HTMLEmbedElement & Text) {
     return code += ')';
 };
 
-const processAttrs = function({ attributes }: HTMLEmbedElement) {
+const processAttrs = function({ attributes }: Element) {
     let code: string[] = [];
     let options: elmOption = {
         attrs: [],

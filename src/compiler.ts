@@ -47,7 +47,8 @@ const process = function(element: Element | Text) {
     else if (element instanceof Text) {
         let text = element.wholeText.replace(noSpaceAndLineBreak, ''); // 去掉空格会车
         let newText = text.replace(escape, function(match: string) {
-            return `\${${match.slice(2, -2)}}`;
+            // 处理 ref 的情况 用 _v 方法包起来
+            return `\${_v(${match.slice(2, -2)})}`;
         });
         console.log(newText);
         return `\`${newText}\``;

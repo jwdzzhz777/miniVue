@@ -16,9 +16,13 @@ const handler: ProxyHandler<object> = {
     }
 };
 
+export const isRef = function(target: any) {
+    return isObject(target) && 'isRef' in target && target.isRef;
+};
+
 export const ref = function(value: any) {
     if (isObject(value)) {
-        if ('isRef' in value) return value;
+        if (isRef(value)) return value;
         else return;
     }
 
@@ -74,7 +78,7 @@ const trigger = function(target: object, key: string | symbol) {
     });
 }
 
-interface ReactiveEffect<T = any> {
+export interface ReactiveEffect<T = any> {
     (...args: any[]): T
     _isEffect: true
     deps: Array<Dep>

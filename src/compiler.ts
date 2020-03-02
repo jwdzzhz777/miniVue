@@ -5,9 +5,7 @@ const noSpaceAndLineBreak = /\s*|[\r\n]/g;
 const escape = /({{([\s\S]+?)}})+/g;
 
 export const compile = function(element: Element) {
-    // 储存原始元素作为基准
-    const primitiveList = element.childNodes;
-    let code = `console.log(this);with(this) {return ${process(element)}}`;
+    let code = `with(this) {return ${process(element)}}`;
     return new Function(code);
 };
 
@@ -50,7 +48,6 @@ const process = function(element: Element | Text) {
             // 处理 ref 的情况 用 _v 方法包起来
             return `\${_v(${match.slice(2, -2)})}`;
         });
-        console.log(newText);
         return `\`${newText}\``;
     }
     else return;

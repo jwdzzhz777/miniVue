@@ -1,18 +1,30 @@
 <html>
     <body>
-        <div id="app"></div>
+        <div id="app">
+            输入框：
+            <input class="name" :value="input" @input="update"></input>
+            <div>我的输入：{{input}}</div>
+            <button @click="clickHandler">点击</button>
+            你点了：{{data.count}} 下
+        </div>
     </body>
     <script src="./dist/bundle.js"></script>
     <script>
-        const { reactive, ref, effect } = miniVue;
-        let data = reactive({
-            title: 'hello'
-        });
-        let some = ref('world');
-        effect(function() {
-            console.log(`${data.title} ${some.value}`);
-        });
-        data.title = 'Hello';
-        some.value = 'World';
+        const { reactive, ref, effect, compile, createElement, createText, miniVue1, createApp } = miniVue;
+    
+        createApp({
+            setup() {
+                let input = ref(123);
+                let data = reactive({
+                    count: 0
+                });
+                return {
+                    input,
+                    data,
+                    update: (val) => void (input.value = val.target.value),
+                    clickHandler: () => void (data.count += 1)
+                }
+            }
+        }).mount('#app');
     </script>
 </html>

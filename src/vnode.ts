@@ -1,5 +1,5 @@
 import { elmOption } from './compiler';
-import { miniVue1 } from './miniVue';
+import { ComponentInstance } from './miniVue';
 import { isRef } from './reactivity';
 
 export enum NodeType {
@@ -80,19 +80,18 @@ const vnodeToElm = function(vnode: VNode) {
     return el;
 }
 
-export const patch = function(oldVNode: VNode | undefined, vnode: VNode, instance: miniVue1) {
+export const patch = function(oldVNode: VNode | undefined, vnode: VNode, instance: ComponentInstance) {
     if (!oldVNode) {
         let el = vnodeToElm(vnode);
-        if (el && instance.el) instance.el.parentNode!.replaceChild(el, instance.el);
+        if (el && instance.el) instance.el.parentNode?.replaceChild(el, instance.el);
         return;
     }
 
     if (!isSameVNode(oldVNode, vnode)) {
         let el = vnodeToElm(vnode);
-        if (el && oldVNode.el) oldVNode.el.parentNode!.replaceChild(el, oldVNode.el);
+        if (el && oldVNode.el) oldVNode.el.parentNode?.replaceChild(el, oldVNode.el);
     } else {
         if (vnode.type === NodeType.Text && oldVNode.nodeValue !== vnode.nodeValue) {
-            console.log(123, oldVNode);
             vnode.nodeValue && (oldVNode.el!.nodeValue = vnode.nodeValue);
         } else {
             updateAttrs(oldVNode, vnode);
@@ -115,13 +114,13 @@ const updateAttrs = function(oldVNode: VNode, vnode: VNode) {
     // 设置新的和修改的属性
     for (let key in attrs) {
         if (!(key in oldAttrs) || oldAttrs[key] !== attrs[key]) {
-            oldVNode.el!.setAttribute(key, getValue(attrs[key]));
+            oldVNode.el?.setAttribute(key, getValue(attrs[key]));
         }
     }
     // 删除没有的属性
     for (let key in oldAttrs) {
         if (!(key in attrs)) {
-            oldVNode.el!.removeAttribute(key);
+            oldVNode.el?.removeAttribute(key);
         }
     }
 }
